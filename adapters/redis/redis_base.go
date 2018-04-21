@@ -2,14 +2,14 @@ package redis
 
 import (
 	"github.com/go-redis/redis"
-	"github.com/sanksons/flashcache/flash/common"
+	"github.com/sanksons/tavern/utils"
 )
 
 type Redis struct {
 	Client RedisClient
 }
 
-func (this *Redis) Set(i common.CacheItem) error {
+func (this *Redis) Set(i utils.CacheItem) error {
 	err := this.Client.Set(string(i.Key), i.Value, i.Expiration).Err()
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func (this *Redis) Set(i common.CacheItem) error {
 func (this *Redis) Get(key string) ([]byte, error) {
 	str, err := this.Client.Get(key).Result()
 	if err != nil && err == redis.Nil {
-		return nil, common.KeyNotExists
+		return nil, utils.KeyNotExists
 	}
 	if err != nil {
 		return nil, err

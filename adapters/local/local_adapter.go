@@ -1,11 +1,13 @@
-package flash
+package local
 
-import "github.com/sanksons/flashcache/flash/common"
+import (
+	"github.com/sanksons/tavern/utils"
+)
 
 type Local struct {
 }
 
-func (this *Local) Set(i common.CacheItem) error {
+func (this *Local) Set(i utils.CacheItem) error {
 	return nil
 }
 
