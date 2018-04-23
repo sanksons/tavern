@@ -1,57 +1,72 @@
 package main
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/sanksons/tavern/utils"
 
 	"github.com/sanksons/tavern/adapters/redis"
-
-	"github.com/sanksons/tavern"
 )
 
 const CACHING_ENGINE = "redis-simple"
 
 func main() {
-	//	client := goredis.NewClient(&goredis.Options{
-	//		Addr:     "localhost:6379",
-	//		Password: "", // no password set
-	//		DB:       0,  // use default DB
-	//	})
 
-	// err := client.MSet([]string{"key1", "value1", "key2", "value2", "key3", "value3"}).Err()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	//This is how we initialize redis adapter
+	cacheAdapter := redis.InitializeRedisSimple(redis.RedisSimpleConfig{
+		Addr: "localhost:6379",
+	})
 
-	// 	fmt.Println("I am main")
-	cacheAdapter := Initialize()
-	cacheAdapter.MSet([]utils.CacheItem{
-		utils.CacheItem{
-			Key:   "key10",
-			Value: []byte("I am key 10"),
-		},
-		utils.CacheItem{
-			Key:   "key11",
-			Value: []byte("I am key 11"),
-		},
-	}...)
+	//This is how we set a key
+	cacheAdapter.Set(utils.CacheItem{Key: "A", Value: []byte("I am A")})
 
-	cacheAdapter.Destroy("key10", "key11")
+	//This is how we get a key
+	data, err := cacheAdapter.Get("A")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("\n%s\n", data)
+
+	//This is how we set multiple keys
+	items := prepareCacheItems()
+	fmt.Println("\nSet multiple items:")
+	result, err := cacheAdapter.MSet(items...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Result: \n%+v\n", result)
+
+	//This is how we get multiple keys
+	fmt.Println("\n get multiple Items:")
+	resultget, err := cacheAdapter.MGet("A", "B", "C", "D")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Result: \n%+v\n", resultget)
+
+	//this is how we destry keys
+	fmt.Println("\n delete Items:")
+	resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
+	fmt.Printf("Result: \n%+v\n", resultdelete)
 
 }
 
-func Initialize() tavern.CacheAdapter {
-	switch CACHING_ENGINE {
-	case tavern.ADAPTER_TYPE_REDIS_SIMPLE:
-
-		rs := new(redis.RedisSimple)
-		rs.Initialize(redis.RedisSimpleConfig{Addr: "localhost:6379"})
-		return rs
-	case tavern.ADAPTER_TYPE_REDIS_CLUSTER:
-		return nil
-	case tavern.ADAPTER_TYPE_LOCAL:
-		return nil
+func prepareCacheItems() []utils.CacheItem {
+	data := map[string]string{
+		"A": "I am A",
+		"B": "I am A",
+		"C": "I am C",
 	}
-	return nil
+	cacheItems := make([]utils.CacheItem, 0)
+	for k, v := range data {
+		item := utils.CacheItem{
+			Key:   utils.CacheKey(k),
+			Value: []byte(v),
+		}
+		cacheItems = append(cacheItems, item)
+	}
+	return cacheItems
 }
 
 // func InitializeRedis() {

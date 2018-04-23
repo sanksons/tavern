@@ -10,11 +10,13 @@ type RedisSimple struct {
 	redisbase
 }
 
-func (this *RedisSimple) Initialize(config RedisSimpleConfig) {
+func InitializeRedisSimple(config RedisSimpleConfig) *RedisSimple {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Addr,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	this.Client = client
+	redisSimple := new(RedisSimple)
+	redisSimple.Client = client
+	return redisSimple
 }
