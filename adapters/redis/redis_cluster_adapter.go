@@ -9,7 +9,7 @@ type RedisClusterConfig struct {
 }
 
 type RedisCluster struct {
-	Redis
+	redisbase
 }
 
 func (this *RedisCluster) Initialize(config RedisClusterConfig) {

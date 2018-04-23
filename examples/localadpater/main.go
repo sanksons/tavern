@@ -11,15 +11,20 @@ import (
 const CACHING_ENGINE = "redis-simple"
 
 func main() {
+	//Initilaize cache adapter
 	cacheAdapter := local.Initialize(local.LocalAdapterConfig{})
+
+	//set a key into local adapter
 	cacheAdapter.Set(utils.CacheItem{Key: "A", Value: []byte("I am A")})
 
+	//get a key from local cache
 	data, err := cacheAdapter.Get("A")
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("\n%s\n", data)
 
+	//Set multiple items in cache
 	items := prepareCacheItems()
 	fmt.Println("\nSet multiple items:")
 	result, err := cacheAdapter.MSet(items...)
@@ -28,6 +33,7 @@ func main() {
 	}
 	fmt.Printf("Result: \n%+v\n", result)
 
+	//Get multiple items from cache
 	fmt.Println("\n get multiple Items:")
 	resultget, err := cacheAdapter.MGet("A", "B", "C", "D")
 	if err != nil {
@@ -35,6 +41,7 @@ func main() {
 	}
 	fmt.Printf("Result: \n%+v\n", resultget)
 
+	//Delete items from cache.
 	fmt.Println("\n delete Items:")
 	resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
 	fmt.Printf("Result: \n%+v\n", resultdelete)

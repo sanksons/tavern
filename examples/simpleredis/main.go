@@ -1,33 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"github.com/sanksons/tavern/utils"
 
 	"github.com/sanksons/tavern/adapters/redis"
 
 	"github.com/sanksons/tavern"
-
-	"github.com/sanksons/tavern/utils"
 )
 
 const CACHING_ENGINE = "redis-simple"
 
 func main() {
-	fmt.Println("I am main")
+	//	client := goredis.NewClient(&goredis.Options{
+	//		Addr:     "localhost:6379",
+	//		Password: "", // no password set
+	//		DB:       0,  // use default DB
+	//	})
+
+	// err := client.MSet([]string{"key1", "value1", "key2", "value2", "key3", "value3"}).Err()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// 	fmt.Println("I am main")
 	cacheAdapter := Initialize()
-	err := cacheAdapter.Set(utils.CacheItem{Key: "A", Value: []byte("hello1")})
-	if err != nil {
-		log.Fatal(err)
-	}
-	val, err := cacheAdapter.MGet([]string{"C", "A", "B", "q"}...)
-	if err != nil && err == utils.KeyNotExists {
-		log.Fatal("key does not exists")
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%v", val)
+	cacheAdapter.MSet([]utils.CacheItem{
+		utils.CacheItem{
+			Key:   "key10",
+			Value: []byte("I am key 10"),
+		},
+		utils.CacheItem{
+			Key:   "key11",
+			Value: []byte("I am key 11"),
+		},
+	}...)
+
+	cacheAdapter.Destroy("key10", "key11")
 
 }
 

@@ -7,6 +7,9 @@ import (
 	"github.com/sanksons/tavern/utils"
 )
 
+//
+// Any config to be used by local adapter goes here.
+//
 type LocalAdapterConfig struct {
 }
 

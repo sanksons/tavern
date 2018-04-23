@@ -13,6 +13,7 @@ type RedisClient interface {
 	Set(string, interface{}, time.Duration) *redis.StatusCmd
 	Get(string) *redis.StringCmd
 	MGet(...string) *redis.SliceCmd
+	MSet(...interface{}) *redis.StatusCmd
 	Del(...string) *redis.IntCmd
 }
 

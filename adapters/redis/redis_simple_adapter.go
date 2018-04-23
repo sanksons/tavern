@@ -7,7 +7,7 @@ type RedisSimpleConfig struct {
 }
 
 type RedisSimple struct {
-	Redis
+	redisbase
 }
 
 func (this *RedisSimple) Initialize(config RedisSimpleConfig) {

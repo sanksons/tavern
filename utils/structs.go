@@ -9,5 +9,3 @@ type CacheItem struct {
 	Value      []byte
 	Expiration time.Duration
 }
-
-type CacheItems []*CacheItem
