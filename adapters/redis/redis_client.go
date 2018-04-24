@@ -15,6 +15,7 @@ type RedisClient interface {
 	MGet(...string) *redis.SliceCmd
 	MSet(...interface{}) *redis.StatusCmd
 	Del(...string) *redis.IntCmd
+	Pipeline() redis.Pipeliner
 }
 
 type RedisSimpleClient struct {

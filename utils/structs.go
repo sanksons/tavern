@@ -7,5 +7,5 @@ type CacheKey string
 type CacheItem struct {
 	Key        CacheKey
 	Value      []byte
-	Expiration time.Duration
+	Expiration time.Duration //in seconds
 }

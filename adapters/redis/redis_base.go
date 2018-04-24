@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/sanksons/tavern/utils"
 )
@@ -53,20 +55,29 @@ func (this *redisbase) MGet(a ...string) (map[string][]byte, error) {
 }
 
 //Implementation of MSet method of CacheAdapter
-//@todo: implement feature to expire keys (pipelining)
-//@todo: use chunking
+//@todo: should i use chunking or it is wise to use it at client side?
 func (this *redisbase) MSet(items ...utils.CacheItem) (map[string]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
 	results := make(map[string]bool)
+	expiration := make(map[string]time.Duration)
 	//transform
 	transformedData := make([]interface{}, 0, len(items)*2)
 	for _, i := range items {
 		transformedData = append(transformedData, string(i.Key), i.Value)
 		results[string(i.Key)] = true
+		// set expiration
+		if i.Expiration > 0 {
+			expiration[string(i.Key)] = i.Expiration
+		}
 	}
-	err := this.Client.MSet(transformedData...).Err()
+	pipeline := this.Client.Pipeline()
+	pipeline.MSet(transformedData...)
+	for k, v := range expiration {
+		pipeline.Expire(k, v)
+	}
+	_, err := pipeline.Exec()
 	if err != nil {
 		return nil, err
 	}
