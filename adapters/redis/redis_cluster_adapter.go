@@ -3,6 +3,7 @@ package redis
 import (
 	"github.com/go-redis/redis"
 	"github.com/joaojeronimo/go-crc16"
+	"github.com/sanksons/tavern/utils"
 )
 
 const SLOTS_COUNT = 16384
@@ -24,7 +25,7 @@ func (this *RedisCluster) Initialize(config RedisClusterConfig) {
 
 // Override base redis implementation of Mget.
 // @done: - Group keys based on the slots they belong.
-// @todo: - Make concurrent calls to attain parallelism.
+// @done: - Make concurrent calls to attain parallelism.
 func (this *RedisCluster) MGet(a ...string) (map[string][]byte, error) {
 
 	if len(a) == 0 {
@@ -41,6 +42,7 @@ func (this *RedisCluster) MGet(a ...string) (map[string][]byte, error) {
 		}
 	}
 
+	//parallelize
 	ch := make(chan map[string][]byte)
 	max := len(m)
 	for _, keys := range m { //parrallelize calls to redis
@@ -51,6 +53,7 @@ func (this *RedisCluster) MGet(a ...string) (map[string][]byte, error) {
 	}
 
 	datamap := make(map[string][]byte)
+	// join all
 	var count int
 	for {
 		if count == max {
@@ -64,4 +67,12 @@ func (this *RedisCluster) MGet(a ...string) (map[string][]byte, error) {
 	}
 
 	return datamap, nil
+}
+
+func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[string]bool, error) {
+	return nil, nil
+}
+
+func (this *RedisCluster) Destroy(keys ...string) (map[string]bool, error) {
+	return nil, nil
 }
