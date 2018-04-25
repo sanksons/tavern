@@ -42,20 +42,13 @@ func main() {
 	fmt.Printf("Result: \n%+v\n", resultdelete)
 
 	//This is how we set multiple keys
-	//items := prepareCacheItems()
-	//fmt.Println("\nSet multiple items:")
-	//result, err := cacheAdapter.MSet(items...)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Printf("Result: \n%+v\n", result)
-
-	//This is how we get multiple keys
-
-	//this is how we destry keys
-	//fmt.Println("\n delete Items:")
-	//resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
-	//fmt.Printf("Result: \n%+v\n", resultdelete)
+	items := prepareCacheItems()
+	fmt.Println("\nSet multiple items:")
+	result, err := cacheAdapter.MSet(items...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Result: \n%+v\n", result)
 
 }
 
@@ -64,6 +57,7 @@ func prepareCacheItems() []utils.CacheItem {
 		"A": "I am A",
 		"B": "I am A",
 		"C": "I am C",
+		"Z": "ZZZZZZZZZZZZZZZ",
 	}
 	cacheItems := make([]utils.CacheItem, 0)
 	for k, v := range data {

@@ -79,12 +79,58 @@ func (this *RedisCluster) MGet(a ...string) (map[string][]byte, error) {
 	return datamap, nil
 }
 
+//
+// Override base redis implementation of Mset
+//
 func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[string]bool, error) {
-	return nil, nil
+	if len(items) == 0 {
+		return nil, nil
+	}
+	keys := make([]string, 0, len(items))
+	mitems := make(map[string]utils.CacheItem)
+	for _, item := range items {
+		keys = append(keys, string(item.Key))
+		mitems[string(item.Key)] = item
+	}
+
+	//slotify
+	m := this.Slotify(keys...)
+
+	//parallelize
+	funcs := make([]func() interface{}, 0, len(m))
+	for _, keys := range m { //parrallelize calls to redis
+		cacheItems := make([]utils.CacheItem, 0, len(keys))
+		for _, key := range keys {
+			cacheItems = append(cacheItems, mitems[key])
+		}
+		//prepare functions to be executed parallely.
+		funcs = append(funcs, func(cacheItems ...utils.CacheItem) func() interface{} {
+			return func() interface{} {
+				keydata, _ := this.redisbase.MSet(cacheItems...) //this is local keys.
+				return keydata
+			}
+		}(cacheItems...))
+
+	}
+	datamap := make(map[string]bool)
+	results := utils.Parallelize(funcs)
+
+	//club all
+	for _, i := range results {
+		datamapTmp, ok := i.(map[string]bool)
+		if !ok {
+			fmt.Printf("Expected map[string]bool, found: %T", i)
+		}
+		for k, v := range datamapTmp {
+			datamap[k] = v
+		}
+	}
+	return datamap, nil
 }
 
+//
 // Override base redis implementation of Destroy
-
+//
 func (this *RedisCluster) Destroy(keys ...string) (map[string]bool, error) {
 
 	if len(keys) == 0 {
@@ -94,7 +140,7 @@ func (this *RedisCluster) Destroy(keys ...string) (map[string]bool, error) {
 	m := this.Slotify(keys...)
 
 	//parallelize
-	funcs := make([]func() interface{}, 0)
+	funcs := make([]func() interface{}, 0, len(m))
 	for _, keys := range m { //parrallelize calls to redis
 
 		funcs = append(funcs, func(keys ...string) func() interface{} {
@@ -107,6 +153,8 @@ func (this *RedisCluster) Destroy(keys ...string) (map[string]bool, error) {
 	}
 	datamap := make(map[string]bool)
 	results := utils.Parallelize(funcs)
+
+	//club all
 	for _, i := range results {
 		datamapTmp, ok := i.(map[string]bool)
 		if !ok {
