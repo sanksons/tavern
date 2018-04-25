@@ -29,8 +29,8 @@ func (this *Local) Set(i utils.CacheItem) error {
 
 // Get the value of key supplied, from local cache
 // implementation of CacheAdapter Get method
-func (this *Local) Get(key string) ([]byte, error) {
-	data, found := this.Client.Get(key)
+func (this *Local) Get(key utils.CacheKey) ([]byte, error) {
+	data, found := this.Client.Get(key.GetMachineKey().String())
 	if !found {
 		return nil, utils.KeyNotExists
 	}
@@ -43,11 +43,11 @@ func (this *Local) Get(key string) ([]byte, error) {
 
 // Get multiple values from local cache adapter
 // implementation of CacheAdapter MGet method
-func (this *Local) MGet(a ...string) (map[string][]byte, error) {
+func (this *Local) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, error) {
 	if len(a) == 0 {
 		return nil, nil
 	}
-	values := make(map[string][]byte)
+	values := make(map[utils.CacheKey][]byte)
 	for _, key := range a {
 		data, err := this.Get(key)
 		if err != nil && err != utils.KeyNotExists {
@@ -64,17 +64,16 @@ func (this *Local) MGet(a ...string) (map[string][]byte, error) {
 
 // Set multiple values in local cache adpater
 // implementation of CacheAdapter MSet method
-func (this *Local) MSet(items ...utils.CacheItem) (map[string]bool, error) {
+func (this *Local) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
-	result := make(map[string]bool)
+	result := make(map[utils.CacheKey]bool)
 	for _, i := range items {
 		err := this.Set(i)
-		key := string(i.Key)
-		result[key] = false
+		result[i.Key] = false
 		if err == nil {
-			result[key] = true
+			result[i.Key] = true
 		}
 	}
 	return result, nil
@@ -82,13 +81,13 @@ func (this *Local) MSet(items ...utils.CacheItem) (map[string]bool, error) {
 
 // Destroy Delete supplied values from local cache adpater
 // implementation of CacheAdapter Destroy method
-func (this *Local) Destroy(keys ...string) (map[string]bool, error) {
+func (this *Local) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
-	result := make(map[string]bool)
+	result := make(map[utils.CacheKey]bool)
 	for _, k := range keys {
-		this.Client.Delete(k)
+		this.Client.Delete(k.GetMachineKey().String())
 		result[k] = true
 	}
 	return result, nil

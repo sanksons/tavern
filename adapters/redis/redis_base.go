@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -16,7 +17,8 @@ type redisbase struct {
 
 // Implementation of Set method of CacheAdapter
 func (this *redisbase) Set(i utils.CacheItem) error {
-	err := this.Client.Set(string(i.Key), i.Value, i.Expiration).Err()
+
+	err := this.Client.Set(i.Key.GetMachineKey().String(), i.Value, i.Expiration).Err()
 	if err != nil {
 		return err
 	}
@@ -24,8 +26,8 @@ func (this *redisbase) Set(i utils.CacheItem) error {
 }
 
 //Implementation of Get method of CacheAdapter
-func (this *redisbase) Get(key string) ([]byte, error) {
-	str, err := this.Client.Get(key).Result()
+func (this *redisbase) Get(key utils.CacheKey) ([]byte, error) {
+	str, err := this.Client.Get(key.GetMachineKey().String()).Result()
 	if err != nil && err == redis.Nil {
 		return nil, utils.KeyNotExists
 	}
@@ -36,19 +38,26 @@ func (this *redisbase) Get(key string) ([]byte, error) {
 }
 
 //Implementation of MGet method of CacheAdapter
-func (this *redisbase) MGet(a ...string) (map[string][]byte, error) {
+func (this *redisbase) MGet(keys ...utils.CacheKey) (map[utils.CacheKey][]byte, error) {
+	if len(keys) == 0 {
+		return nil, nil
+	}
+	a := make([]string, 0, len(keys))
+	for _, ck := range keys {
+		a = append(a, ck.GetMachineKey().String())
+	}
 	sliceI, err := this.Client.MGet(a...).Result()
 	if err != nil {
 		return nil, err
 	}
-	m := make(map[string][]byte)
+	m := make(map[utils.CacheKey][]byte)
 	for k, v := range sliceI {
 		valstr, ok := v.(string)
 		if !ok {
-			//m[a[k]] = nil
+			fmt.Printf("Expected string, got : %T", v)
 			continue //skip
 		}
-		m[a[k]] = []byte(valstr)
+		m[keys[k]] = []byte(valstr)
 	}
 
 	return m, nil
@@ -56,26 +65,26 @@ func (this *redisbase) MGet(a ...string) (map[string][]byte, error) {
 
 //Implementation of MSet method of CacheAdapter
 //@todo: should i use chunking or it is wise to use it at client side?
-func (this *redisbase) MSet(items ...utils.CacheItem) (map[string]bool, error) {
+func (this *redisbase) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
-	results := make(map[string]bool)
-	expiration := make(map[string]time.Duration)
+	results := make(map[utils.CacheKey]bool)
+	expiration := make(map[utils.CacheKey]time.Duration)
 	//transform
 	transformedData := make([]interface{}, 0, len(items)*2)
 	for _, i := range items {
-		transformedData = append(transformedData, string(i.Key), i.Value)
-		results[string(i.Key)] = true
+		transformedData = append(transformedData, i.Key.GetMachineKey().String(), i.Value)
+		results[i.Key] = true
 		// set expiration
 		if i.Expiration > 0 {
-			expiration[string(i.Key)] = i.Expiration
+			expiration[i.Key] = i.Expiration
 		}
 	}
 	pipeline := this.Client.Pipeline()
 	pipeline.MSet(transformedData...)
 	for k, v := range expiration {
-		pipeline.Expire(k, v)
+		pipeline.Expire(k.GetMachineKey().String(), v)
 	}
 	_, err := pipeline.Exec()
 	if err != nil {
@@ -85,16 +94,20 @@ func (this *redisbase) MSet(items ...utils.CacheItem) (map[string]bool, error) {
 }
 
 //Implementation of Destroy method of CacheAdapter
-func (this *redisbase) Destroy(keys ...string) (map[string]bool, error) {
+func (this *redisbase) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
-	err := this.Client.Del(keys...).Err()
+	a := make([]string, 0, len(keys))
+	for _, ck := range keys {
+		a = append(a, ck.GetMachineKey().String())
+	}
+	err := this.Client.Del(a...).Err()
 	var status bool
 	if err == nil {
 		status = true
 	}
-	m := make(map[string]bool)
+	m := make(map[utils.CacheKey]bool)
 	for _, k := range keys {
 		m[k] = status
 	}

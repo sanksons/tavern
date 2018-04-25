@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/sanksons/tavern/utils"
 
@@ -62,8 +63,9 @@ func prepareCacheItems() []utils.CacheItem {
 	cacheItems := make([]utils.CacheItem, 0)
 	for k, v := range data {
 		item := utils.CacheItem{
-			Key:   utils.CacheKey(k),
-			Value: []byte(v),
+			Key:        utils.CacheKey(k),
+			Value:      []byte(v),
+			Expiration: time.Second * 2,
 		}
 		cacheItems = append(cacheItems, item)
 	}

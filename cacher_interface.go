@@ -15,9 +15,9 @@ var _ CacheAdapter = (*redis.RedisCluster)(nil)
 var _ CacheAdapter = (*local.Local)(nil)
 
 type CacheAdapter interface {
-	Get(string) ([]byte, error)
+	Get(utils.CacheKey) ([]byte, error)
 	Set(utils.CacheItem) error
-	MGet(...string) (map[string][]byte, error)
-	MSet(...utils.CacheItem) (map[string]bool, error)
-	Destroy(...string) (map[string]bool, error)
+	MGet(...utils.CacheKey) (map[utils.CacheKey][]byte, error)
+	MSet(...utils.CacheItem) (map[utils.CacheKey]bool, error)
+	Destroy(...utils.CacheKey) (map[utils.CacheKey]bool, error)
 }
