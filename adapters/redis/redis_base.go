@@ -89,8 +89,14 @@ func (this *redisbase) Destroy(keys ...string) (map[string]bool, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
-	if err := this.Client.Del(keys...).Err(); err != nil {
-		return nil, err
+	err := this.Client.Del(keys...).Err()
+	var status bool
+	if err == nil {
+		status = true
 	}
-	return nil, nil
+	m := make(map[string]bool)
+	for _, k := range keys {
+		m[k] = status
+	}
+	return m, nil
 }
