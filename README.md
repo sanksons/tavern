@@ -43,8 +43,51 @@ cacheAdapter.Set(utils.CacheItem{
 Get a key
 ```go
 data, err := cacheAdapter.Get("A")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("\n%s\n", data)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("\n%s\n", data)
+```
+Set multiple keys
+```go
+//Set multiple items in cache
+items := prepareCacheItems()
+fmt.Println("\nSet multiple items:")
+result, err := cacheAdapter.MSet(items...)
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Result: \n%+v\n", result)
+
+func prepareCacheItems() []utils.CacheItem {
+    data := map[string]string{
+        "A": "I am A",
+        "B": "I am A",
+        "C": "I am C",
+    }
+    cacheItems := make([]utils.CacheItem, 0)
+    for k, v := range data {
+        item := utils.CacheItem{
+            Key:   utils.CacheKey(k),
+            Value: []byte(v),
+        }
+        cacheItems = append(cacheItems, item)
+    }
+    return cacheItems
+}
+```
+Get multiple keys
+```go
+//Get multiple items from cache
+fmt.Println("\n get multiple Items:")
+resultget, err := cacheAdapter.MGet("A", "B", "C", "D")
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Result: \n%+v\n", resultget)
+```
+Delete keys
+```go
+resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
+fmt.Printf("Result: \n%+v\n", resultdelete)
 ```
