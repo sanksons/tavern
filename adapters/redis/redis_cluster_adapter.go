@@ -11,7 +11,9 @@ import (
 const SLOTS_COUNT = 16384
 
 type RedisClusterConfig struct {
-	Addrs []string
+	Addrs    []string
+	Password string
+	PoolSize int
 }
 
 type RedisCluster struct {
@@ -20,7 +22,9 @@ type RedisCluster struct {
 
 func InitializeRedisCluster(config RedisClusterConfig) *RedisCluster {
 	client := redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: config.Addrs,
+		Addrs:    config.Addrs,
+		Password: config.Password,
+		PoolSize: config.PoolSize,
 	})
 	redisCluster := new(RedisCluster)
 	redisCluster.Client = client
