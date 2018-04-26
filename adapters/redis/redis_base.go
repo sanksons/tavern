@@ -52,6 +52,9 @@ func (this *redisbase) MGet(keys ...utils.CacheKey) (map[utils.CacheKey][]byte, 
 	}
 	m := make(map[utils.CacheKey][]byte)
 	for k, v := range sliceI {
+		if v == nil {
+			continue
+		}
 		valstr, ok := v.(string)
 		if !ok {
 			fmt.Printf("Expected string, got : %T", v)
