@@ -11,6 +11,7 @@ import (
 const ADAPTER_TYPE_LOCAL = "local"
 const ADAPTER_TYPE_REDIS_SIMPLE = "redis-simple"
 const ADAPTER_TYPE_REDIS_CLUSTER = "redis-cluster"
+const ADAPTER_TYPE_ELASTICACHE = "elasticache"
 
 var _ CacheAdapter = (*redis.RedisSimple)(nil)
 var _ CacheAdapter = (*redis.RedisCluster)(nil)
@@ -38,7 +39,7 @@ func Initialize(adapter string, config interface{}) (CacheAdapter, error) {
 			return nil, fmt.Errorf("Expected redis.RedisSimpleConfig, Got: %T", config)
 		}
 		return redis.InitializeRedisSimple(c), nil
-	case ADAPTER_TYPE_REDIS_CLUSTER:
+	case ADAPTER_TYPE_REDIS_CLUSTER, ADAPTER_TYPE_ELASTICACHE:
 		c, ok := config.(redis.RedisClusterConfig)
 		if !ok {
 			return nil, fmt.Errorf("Expected redis.RedisClusterConfig, Got: %T", config)
