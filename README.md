@@ -1,5 +1,5 @@
 # Tavern
-<img align="right" width="159px" src="http://www.creativeuncut.com/gallery-08/art/f2-sketch-tavern.jpg">
+<img align="right" width="159px" src="http://sanksons.com/techimages/tavern.jpg">
 
 
 All in one Caching library built in go to be used by go applications. The purpose is to expose an interface that is easy to be used and provides abstraction with the underlying caching techniques.
