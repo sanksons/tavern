@@ -39,27 +39,33 @@ Set a Key
 ```go
 //set a key
 cacheAdapter.Set(entity.CacheItem{
-    Key: "A", Value: []byte("I am A")
+    Key:   entity.CacheKey{Name: "A"},
+    Value: []byte("I am A"),
 })
 ```
 Get a key
 ```go
-data, err := cacheAdapter.Get("A")
+//This is how we get a key
+data, err := cacheAdapter.Get(entity.CacheKey{
+    Name: "A",
+})
 if err != nil {
     log.Fatal(err)
 }
 fmt.Printf("\n%s\n", data)
 ```
 Set multiple keys
+
 ```go
 //Set multiple items in cache
 items := prepareCacheItems()
 fmt.Println("\nSet multiple items:")
 result, err := cacheAdapter.MSet(items...)
 if err != nil {
-	log.Fatal(err)
+    log.Fatal(err)
 }
 fmt.Printf("Result: \n%+v\n", result)
+
 
 func prepareCacheItems() []entity.CacheItem {
     data := map[string]string{
@@ -81,16 +87,27 @@ func prepareCacheItems() []entity.CacheItem {
 Get multiple keys
 ```go
 //Get multiple items from cache
-fmt.Println("\n get multiple Items:")
-resultget, err := cacheAdapter.MGet("A", "B", "C", "D")
+resultget, err := cacheAdapter.MGet(
+    []entity.CacheKey{
+        entity.CacheKey{Name: "A"},
+        entity.CacheKey{Name: "B"},
+        entity.CacheKey{Name: "C"},
+}...)
 if err != nil {
     log.Fatal(err)
 }
-fmt.Printf("Result: \n%+v\n", resultget)
+for k, v := range resultget {
+    fmt.Printf("\n%s:%s", k, string(v))
+}
 ```
 Delete keys
 ```go
-resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
+resultdelete, err := cacheAdapter.Destroy([]entity.CacheKey{
+    entity.CacheKey{Name: "A"},
+    entity.CacheKey{Name: "B"},
+    entity.CacheKey{Name: "C"},
+    entity.CacheKey{Name: "G"},
+}...)
 fmt.Printf("Result: \n%+v\n", resultdelete)
 ```
 ## To run tests
