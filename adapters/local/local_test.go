@@ -1,6 +1,8 @@
 package local_test
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sanksons/tavern/common/entity"
@@ -145,6 +147,64 @@ var _ = Describe("Local Adapter", func() {
 
 				_, err2 := Adapter.Get(entity.CacheKey{Name: "mkey2"})
 				Expect(err2).To(Equal(errors.KeyNotExists))
+			})
+
+		})
+
+		//
+		// Bucketing test suite
+		//
+		Context("BUCKETING", func() {
+			It("should successfully set keys", func() {
+				k1 := entity.CacheKey{Name: "mkey1b", Bucket: "buck1"}
+				k2 := entity.CacheKey{Name: "mkey2b", Bucket: "buck2"}
+				k3 := entity.CacheKey{Name: "mkey3b", Bucket: "buck3"}
+				Items := []entity.CacheItem{
+					entity.CacheItem{
+						Key:        k1,
+						Value:      []byte("I am mkey1"),
+						Expiration: time.Duration(340) * time.Second,
+					},
+					entity.CacheItem{
+						Key:        k2,
+						Value:      []byte("I am mkey2"),
+						Expiration: time.Duration(340) * time.Second,
+					},
+					entity.CacheItem{
+						Key:        k3,
+						Value:      []byte("I am mkey3"),
+						Expiration: time.Duration(340) * time.Second,
+					},
+				}
+
+				result, err := Adapter.MSet(Items...)
+				Expect(err).To(BeNil())
+				Expect(result).To(Equal(map[entity.CacheKey]bool{
+					k1: true,
+					k2: true,
+					k3: true,
+				}))
+			})
+			It("should successfully Get keys", func() {
+
+				//@todo: I am here.
+				dataBytes, err := Adapter.MGet(
+					entity.CacheKey{Name: "mkey1b", Bucket: "buck1"},
+					entity.CacheKey{Name: "mkey2b", Bucket: "buck2"},
+					entity.CacheKey{Name: "mkey3b", Bucket: "buck3"},
+				)
+				Expect(err).To(BeNil())
+				for k, v := range dataBytes {
+					if k.Name == "mkey1b" {
+						Expect(v).To(Equal([]byte("I am mkey1")))
+					}
+					if k.Name == "mkey2b" {
+						Expect(v).To(Equal([]byte("I am mkey2")))
+					}
+					if k.Name == "mkey3b" {
+						Expect(v).To(Equal([]byte("I am mkey3")))
+					}
+				}
 			})
 
 		})
