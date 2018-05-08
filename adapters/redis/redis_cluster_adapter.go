@@ -35,7 +35,13 @@ func InitializeRedisCluster(config RedisClusterConfig) *RedisCluster {
 func (this *RedisCluster) slotify(keys ...entity.CacheKey) map[uint16][]entity.CacheKey {
 	m := make(map[uint16][]entity.CacheKey)
 	for _, key := range keys {
-		slot := (crc16.Crc16([]byte(key))) % SLOTS_COUNT
+		var crckey string
+		if key.Bucket == entity.NO_BUCKET_SPECIFIED {
+			crckey = key.Name
+		} else {
+			crckey = key.Bucket
+		}
+		slot := (crc16.Crc16([]byte(crckey))) % SLOTS_COUNT
 		if _, ok := m[slot]; !ok {
 			m[slot] = []entity.CacheKey{key}
 		} else {
