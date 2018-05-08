@@ -110,6 +110,52 @@ resultdelete, err := cacheAdapter.Destroy([]entity.CacheKey{
 }...)
 fmt.Printf("Result: \n%+v\n", resultdelete)
 ```
+#### Using Bucketing.
+
+Bucketing feature allows you to control which keys goes in which buckets.
+
+Sample code:
+```go
+
+citems := prepareCacheItemswithBuckets()
+fmt.Println("Test bucketing")
+result, err = cacheAdapter.MSet(citems...)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Result: \n%+v\n", result)
+resultget1, err := cacheAdapter.MGet(
+    []entity.CacheKey{
+        entity.CacheKey{Name: "AA", Bucket: "buck1"},
+        entity.CacheKey{Name: "BB", Bucket: "buck2"},
+        entity.CacheKey{Name: "CC", Bucket: "buck1"},
+}...)
+if err != nil {
+    log.Fatal(err)
+}
+for k, v := range resultget1 {
+    fmt.Printf("\n%s:%s", k, string(v))
+}
+
+func prepareCacheItemswithBuckets() []entity.CacheItem {
+    data := map[string][]string{
+        "AA": []string{"I am A", "buck1"},
+        "BB": []string{"I am A", "buck2"},
+        "CC": []string{"I am C", "buck1"},
+        "ZZ": []string{"ZZZZZZZZZZZZZZZ", "buck3"},
+    }
+    cacheItems := make([]entity.CacheItem, 0)
+    for k, v := range data {
+        item := entity.CacheItem{
+            Key:        entity.CacheKey{Name: k, Bucket: v[1]},
+            Value:      []byte(v[0]),
+            Expiration: time.Second * 200,
+        }
+    cacheItems = append(cacheItems, item)
+    }
+    return cacheItems
+}
+```
 ## To run tests
 ```
 ginkgo ./...
