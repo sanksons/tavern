@@ -24,7 +24,7 @@ type Local struct {
 // Set sets cacheitem into local cache
 // implementation of CacheAdapter Set method
 func (this *Local) Set(i CacheItem) error {
-	this.Client.Set(string(i.Key), i.Value, i.Expiration)
+	this.Client.Set(i.Key.GetMachineKey().String(), i.Value, i.Expiration)
 	return nil
 }
 
