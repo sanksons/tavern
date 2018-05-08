@@ -35,7 +35,7 @@ cacheAdapter := redis.InitializeRedisSimple(redis.RedisSimpleConfig{
 ```
 #### Usage
 
-- Set a Key
+- **Set a Key**
 ```go
 //set a key
 cacheAdapter.Set(entity.CacheItem{
@@ -43,7 +43,7 @@ cacheAdapter.Set(entity.CacheItem{
     Value: []byte("I am A"),
 })
 ```
-- Get a key
+- **Get a key**
 ```go
 //This is how we get a key
 data, err := cacheAdapter.Get(entity.CacheKey{
@@ -54,7 +54,7 @@ if err != nil {
 }
 fmt.Printf("\n%s\n", data)
 ```
-- Set multiple keys
+- **Set multiple keys**
 
 ```go
 //Set multiple items in cache
@@ -84,7 +84,7 @@ func prepareCacheItems() []entity.CacheItem {
     return cacheItems
 }
 ```
-- Get multiple keys
+- **Get multiple keys**
 ```go
 //Get multiple items from cache
 resultget, err := cacheAdapter.MGet(
@@ -100,7 +100,7 @@ for k, v := range resultget {
     fmt.Printf("\n%s:%s", k, string(v))
 }
 ```
-- Delete keys
+- **Delete keys**
 ```go
 resultdelete, err := cacheAdapter.Destroy([]entity.CacheKey{
     entity.CacheKey{Name: "A"},
@@ -110,7 +110,7 @@ resultdelete, err := cacheAdapter.Destroy([]entity.CacheKey{
 }...)
 fmt.Printf("Result: \n%+v\n", resultdelete)
 ```
-#### Using Bucketing.
+## Using Bucketing Feature.
 
 Bucketing feature allows you to control which keys goes in which buckets.
 
