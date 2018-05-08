@@ -5,9 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/sanksons/tavern/utils"
-
 	"github.com/sanksons/tavern/adapters/redis"
+	"github.com/sanksons/tavern/common/entity"
 )
 
 const CACHING_ENGINE = "redis-cluster"
@@ -20,7 +19,7 @@ func main() {
 	})
 
 	//This is how we set a key
-	cacheAdapter.Set(utils.CacheItem{Key: "A", Value: []byte("I am A")})
+	cacheAdapter.Set(entity.CacheItem{Key: "A", Value: []byte("I am A")})
 
 	//This is how we get a key
 	data, err := cacheAdapter.Get("A")
@@ -53,17 +52,17 @@ func main() {
 
 }
 
-func prepareCacheItems() []utils.CacheItem {
+func prepareCacheItems() []entity.CacheItem {
 	data := map[string]string{
 		"A": "I am A",
 		"B": "I am A",
 		"C": "I am C",
 		"Z": "ZZZZZZZZZZZZZZZ",
 	}
-	cacheItems := make([]utils.CacheItem, 0)
+	cacheItems := make([]entity.CacheItem, 0)
 	for k, v := range data {
-		item := utils.CacheItem{
-			Key:        utils.CacheKey(k),
+		item := entity.CacheItem{
+			Key:        entity.CacheKey(k),
 			Value:      []byte(v),
 			Expiration: time.Second * 2,
 		}

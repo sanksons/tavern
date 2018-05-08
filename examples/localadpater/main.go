@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/sanksons/tavern/adapters/local"
-	"github.com/sanksons/tavern/utils"
+	"github.com/sanksons/tavern/common/entity"
 )
 
 const CACHING_ENGINE = "redis-simple"
@@ -15,7 +15,7 @@ func main() {
 	cacheAdapter := local.Initialize(local.LocalAdapterConfig{})
 
 	//set a key into local adapter
-	cacheAdapter.Set(utils.CacheItem{Key: "A", Value: []byte("I am A")})
+	cacheAdapter.Set(entity.CacheItem{Key: "A", Value: []byte("I am A")})
 
 	//get a key from local cache
 	data, err := cacheAdapter.Get("A")
@@ -48,16 +48,16 @@ func main() {
 
 }
 
-func prepareCacheItems() []utils.CacheItem {
+func prepareCacheItems() []entity.CacheItem {
 	data := map[string]string{
 		"A": "I am A",
 		"B": "I am A",
 		"C": "I am C",
 	}
-	cacheItems := make([]utils.CacheItem, 0)
+	cacheItems := make([]entity.CacheItem, 0)
 	for k, v := range data {
-		item := utils.CacheItem{
-			Key:   utils.CacheKey(k),
+		item := entity.CacheItem{
+			Key:   entity.CacheKey(k),
 			Value: []byte(v),
 		}
 		cacheItems = append(cacheItems, item)
