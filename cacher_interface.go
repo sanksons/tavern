@@ -5,7 +5,7 @@ import (
 
 	"github.com/sanksons/tavern/adapters/local"
 	"github.com/sanksons/tavern/adapters/redis"
-	"github.com/sanksons/tavern/utils"
+	"github.com/sanksons/tavern/common/entity"
 )
 
 const ADAPTER_TYPE_LOCAL = "local"
@@ -18,11 +18,11 @@ var _ CacheAdapter = (*redis.RedisCluster)(nil)
 var _ CacheAdapter = (*local.Local)(nil)
 
 type CacheAdapter interface {
-	Get(utils.CacheKey) ([]byte, error)
-	Set(utils.CacheItem) error
-	MGet(...utils.CacheKey) (map[utils.CacheKey][]byte, error)
-	MSet(...utils.CacheItem) (map[utils.CacheKey]bool, error)
-	Destroy(...utils.CacheKey) (map[utils.CacheKey]bool, error)
+	Get(entity.CacheKey) ([]byte, error)
+	Set(entity.CacheItem) error
+	MGet(...entity.CacheKey) (map[entity.CacheKey][]byte, error)
+	MSet(...entity.CacheItem) (map[entity.CacheKey]bool, error)
+	Destroy(...entity.CacheKey) (map[entity.CacheKey]bool, error)
 }
 
 func Initialize(adapter string, config interface{}) (CacheAdapter, error) {

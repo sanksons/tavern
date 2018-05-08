@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	localcache "github.com/patrickmn/go-cache"
-	"github.com/sanksons/tavern/utils"
+	. "github.com/sanksons/tavern/common/entity"
+	. "github.com/sanksons/tavern/common/errors"
 )
 
 //
@@ -22,17 +23,17 @@ type Local struct {
 
 // Set sets cacheitem into local cache
 // implementation of CacheAdapter Set method
-func (this *Local) Set(i utils.CacheItem) error {
+func (this *Local) Set(i CacheItem) error {
 	this.Client.Set(string(i.Key), i.Value, i.Expiration)
 	return nil
 }
 
 // Get the value of key supplied, from local cache
 // implementation of CacheAdapter Get method
-func (this *Local) Get(key utils.CacheKey) ([]byte, error) {
+func (this *Local) Get(key CacheKey) ([]byte, error) {
 	data, found := this.Client.Get(key.GetMachineKey().String())
 	if !found {
-		return nil, utils.KeyNotExists
+		return nil, KeyNotExists
 	}
 	databytes, ok := data.([]byte)
 	if !ok {
@@ -43,18 +44,18 @@ func (this *Local) Get(key utils.CacheKey) ([]byte, error) {
 
 // Get multiple values from local cache adapter
 // implementation of CacheAdapter MGet method
-func (this *Local) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, error) {
+func (this *Local) MGet(a ...CacheKey) (map[CacheKey][]byte, error) {
 	if len(a) == 0 {
 		return nil, nil
 	}
-	values := make(map[utils.CacheKey][]byte)
+	values := make(map[CacheKey][]byte)
 	for _, key := range a {
 		data, err := this.Get(key)
-		if err != nil && err != utils.KeyNotExists {
+		if err != nil && err != KeyNotExists {
 			//should not we skip in this case??
 			return nil, err
 		}
-		if err == utils.KeyNotExists {
+		if err == KeyNotExists {
 			continue
 		}
 		values[key] = data
@@ -64,11 +65,11 @@ func (this *Local) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, error) 
 
 // Set multiple values in local cache adpater
 // implementation of CacheAdapter MSet method
-func (this *Local) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, error) {
+func (this *Local) MSet(items ...CacheItem) (map[CacheKey]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
-	result := make(map[utils.CacheKey]bool)
+	result := make(map[CacheKey]bool)
 	for _, i := range items {
 		err := this.Set(i)
 		result[i.Key] = false
@@ -81,11 +82,11 @@ func (this *Local) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, erro
 
 // Destroy Delete supplied values from local cache adpater
 // implementation of CacheAdapter Destroy method
-func (this *Local) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool, error) {
+func (this *Local) Destroy(keys ...CacheKey) (map[CacheKey]bool, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
-	result := make(map[utils.CacheKey]bool)
+	result := make(map[CacheKey]bool)
 	for _, k := range keys {
 		this.Client.Delete(k.GetMachineKey().String())
 		result[k] = true

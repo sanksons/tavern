@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/joaojeronimo/go-crc16"
+	"github.com/sanksons/tavern/common/entity"
 	"github.com/sanksons/tavern/utils"
 )
 
@@ -31,12 +32,12 @@ func InitializeRedisCluster(config RedisClusterConfig) *RedisCluster {
 	return redisCluster
 }
 
-func (this *RedisCluster) slotify(keys ...utils.CacheKey) map[uint16][]utils.CacheKey {
-	m := make(map[uint16][]utils.CacheKey)
+func (this *RedisCluster) slotify(keys ...entity.CacheKey) map[uint16][]entity.CacheKey {
+	m := make(map[uint16][]entity.CacheKey)
 	for _, key := range keys {
 		slot := (crc16.Crc16([]byte(key))) % SLOTS_COUNT
 		if _, ok := m[slot]; !ok {
-			m[slot] = []utils.CacheKey{key}
+			m[slot] = []entity.CacheKey{key}
 		} else {
 			m[slot] = append(m[slot], key)
 		}
@@ -47,7 +48,7 @@ func (this *RedisCluster) slotify(keys ...utils.CacheKey) map[uint16][]utils.Cac
 // Override base redis implementation of Mget.
 // @done: - Group keys based on the slots they belong.
 // @done: - Make concurrent calls to attain parallelism.
-func (this *RedisCluster) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, error) {
+func (this *RedisCluster) MGet(a ...entity.CacheKey) (map[entity.CacheKey][]byte, error) {
 	if len(a) == 0 {
 		return nil, nil
 	}
@@ -55,16 +56,16 @@ func (this *RedisCluster) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, 
 	m := this.slotify(a...)
 
 	//parallelize
-	ch := make(chan map[utils.CacheKey][]byte)
+	ch := make(chan map[entity.CacheKey][]byte)
 	max := len(m)
 	for _, keys := range m { //parrallelize calls to redis
-		go func(keys ...utils.CacheKey) {
+		go func(keys ...entity.CacheKey) {
 			keydata, _ := this.redisbase.MGet(keys...)
 			ch <- keydata
 		}(keys...)
 	}
 
-	datamap := make(map[utils.CacheKey][]byte)
+	datamap := make(map[entity.CacheKey][]byte)
 	// join all
 	var count int
 	for {
@@ -83,12 +84,12 @@ func (this *RedisCluster) MGet(a ...utils.CacheKey) (map[utils.CacheKey][]byte, 
 //
 // Override base redis implementation of Mset
 //
-func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, error) {
+func (this *RedisCluster) MSet(items ...entity.CacheItem) (map[entity.CacheKey]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
-	keys := make([]utils.CacheKey, 0, len(items))
-	mitems := make(map[utils.CacheKey]utils.CacheItem)
+	keys := make([]entity.CacheKey, 0, len(items))
+	mitems := make(map[entity.CacheKey]entity.CacheItem)
 	for _, item := range items {
 		keys = append(keys, item.Key)
 		mitems[item.Key] = item
@@ -100,12 +101,12 @@ func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[utils.CacheKey]boo
 	//parallelize
 	funcs := make([]func() interface{}, 0, len(m))
 	for _, keys := range m { //parrallelize calls to redis
-		cacheItems := make([]utils.CacheItem, 0, len(keys))
+		cacheItems := make([]entity.CacheItem, 0, len(keys))
 		for _, key := range keys {
 			cacheItems = append(cacheItems, mitems[key])
 		}
 		//prepare functions to be executed parallely.
-		funcs = append(funcs, func(cacheItems ...utils.CacheItem) func() interface{} {
+		funcs = append(funcs, func(cacheItems ...entity.CacheItem) func() interface{} {
 			return func() interface{} {
 				keydata, _ := this.redisbase.MSet(cacheItems...) //this is local keys.
 				return keydata
@@ -113,14 +114,14 @@ func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[utils.CacheKey]boo
 		}(cacheItems...))
 
 	}
-	datamap := make(map[utils.CacheKey]bool)
+	datamap := make(map[entity.CacheKey]bool)
 	results := utils.Parallelize(funcs)
 
 	//club all
 	for _, i := range results {
-		datamapTmp, ok := i.(map[utils.CacheKey]bool)
+		datamapTmp, ok := i.(map[entity.CacheKey]bool)
 		if !ok {
-			fmt.Printf("Expected map[utils.CacheKey]bool, found: %T", i)
+			fmt.Printf("Expected map[entity.CacheKey]bool, found: %T", i)
 		}
 		for k, v := range datamapTmp {
 			datamap[k] = v
@@ -132,7 +133,7 @@ func (this *RedisCluster) MSet(items ...utils.CacheItem) (map[utils.CacheKey]boo
 //
 // Override base redis implementation of Destroy
 //
-func (this *RedisCluster) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool, error) {
+func (this *RedisCluster) Destroy(keys ...entity.CacheKey) (map[entity.CacheKey]bool, error) {
 
 	if len(keys) == 0 {
 		return nil, nil
@@ -144,7 +145,7 @@ func (this *RedisCluster) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bo
 	funcs := make([]func() interface{}, 0, len(m))
 	for _, keys := range m { //parrallelize calls to redis
 
-		funcs = append(funcs, func(keys ...utils.CacheKey) func() interface{} {
+		funcs = append(funcs, func(keys ...entity.CacheKey) func() interface{} {
 			return func() interface{} {
 				keydata, _ := this.redisbase.Destroy(keys...) //this is local keys.
 				return keydata
@@ -152,12 +153,12 @@ func (this *RedisCluster) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bo
 		}(keys...))
 
 	}
-	datamap := make(map[utils.CacheKey]bool)
+	datamap := make(map[entity.CacheKey]bool)
 	results := utils.Parallelize(funcs)
 
 	//club all
 	for _, i := range results {
-		datamapTmp, ok := i.(map[utils.CacheKey]bool)
+		datamapTmp, ok := i.(map[entity.CacheKey]bool)
 		if !ok {
 			fmt.Printf("Expected map[string]bool, found: %T", i)
 		}

@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/sanksons/tavern/utils"
+	"github.com/sanksons/tavern/common/entity"
+	. "github.com/sanksons/tavern/common/errors"
 )
 
 // A common implementation for redis cluster and simple redis adapters.
@@ -16,7 +17,7 @@ type redisbase struct {
 }
 
 // Implementation of Set method of CacheAdapter
-func (this *redisbase) Set(i utils.CacheItem) error {
+func (this *redisbase) Set(i entity.CacheItem) error {
 
 	err := this.Client.Set(i.Key.GetMachineKey().String(), i.Value, i.Expiration).Err()
 	if err != nil {
@@ -26,10 +27,10 @@ func (this *redisbase) Set(i utils.CacheItem) error {
 }
 
 //Implementation of Get method of CacheAdapter
-func (this *redisbase) Get(key utils.CacheKey) ([]byte, error) {
+func (this *redisbase) Get(key entity.CacheKey) ([]byte, error) {
 	str, err := this.Client.Get(key.GetMachineKey().String()).Result()
 	if err != nil && err == redis.Nil {
-		return nil, utils.KeyNotExists
+		return nil, KeyNotExists
 	}
 	if err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func (this *redisbase) Get(key utils.CacheKey) ([]byte, error) {
 }
 
 //Implementation of MGet method of CacheAdapter
-func (this *redisbase) MGet(keys ...utils.CacheKey) (map[utils.CacheKey][]byte, error) {
+func (this *redisbase) MGet(keys ...entity.CacheKey) (map[entity.CacheKey][]byte, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
@@ -50,7 +51,7 @@ func (this *redisbase) MGet(keys ...utils.CacheKey) (map[utils.CacheKey][]byte, 
 	if err != nil {
 		return nil, err
 	}
-	m := make(map[utils.CacheKey][]byte)
+	m := make(map[entity.CacheKey][]byte)
 	for k, v := range sliceI {
 		if v == nil {
 			continue
@@ -68,12 +69,12 @@ func (this *redisbase) MGet(keys ...utils.CacheKey) (map[utils.CacheKey][]byte, 
 
 //Implementation of MSet method of CacheAdapter
 //@todo: should i use chunking or it is wise to use it at client side?
-func (this *redisbase) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, error) {
+func (this *redisbase) MSet(items ...entity.CacheItem) (map[entity.CacheKey]bool, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
-	results := make(map[utils.CacheKey]bool)
-	expiration := make(map[utils.CacheKey]time.Duration)
+	results := make(map[entity.CacheKey]bool)
+	expiration := make(map[entity.CacheKey]time.Duration)
 	//transform
 	transformedData := make([]interface{}, 0, len(items)*2)
 	for _, i := range items {
@@ -97,7 +98,7 @@ func (this *redisbase) MSet(items ...utils.CacheItem) (map[utils.CacheKey]bool, 
 }
 
 //Implementation of Destroy method of CacheAdapter
-func (this *redisbase) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool, error) {
+func (this *redisbase) Destroy(keys ...entity.CacheKey) (map[entity.CacheKey]bool, error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
@@ -110,7 +111,7 @@ func (this *redisbase) Destroy(keys ...utils.CacheKey) (map[utils.CacheKey]bool,
 	if err == nil {
 		status = true
 	}
-	m := make(map[utils.CacheKey]bool)
+	m := make(map[entity.CacheKey]bool)
 	for _, k := range keys {
 		m[k] = status
 	}
