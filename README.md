@@ -19,7 +19,7 @@ go get -u github.com/sanksons/tavern
 ```
 ## How to use:
 
-Detailed examples are kept in examples directory. But for a quick view: 
+Detailed examples are kept in ![examples](https://github.com/sanksons/tavern/tree/master/examples) directory. But for a quick view: 
 
 #### Initialization
 
@@ -38,7 +38,7 @@ cacheAdapter := redis.InitializeRedisSimple(redis.RedisSimpleConfig{
 Set a Key
 ```go
 //set a key
-cacheAdapter.Set(utils.CacheItem{
+cacheAdapter.Set(entity.CacheItem{
     Key: "A", Value: []byte("I am A")
 })
 ```
@@ -61,16 +61,16 @@ if err != nil {
 }
 fmt.Printf("Result: \n%+v\n", result)
 
-func prepareCacheItems() []utils.CacheItem {
+func prepareCacheItems() []entity.CacheItem {
     data := map[string]string{
         "A": "I am A",
         "B": "I am A",
         "C": "I am C",
     }
-    cacheItems := make([]utils.CacheItem, 0)
+    cacheItems := make([]entity.CacheItem, 0)
     for k, v := range data {
-        item := utils.CacheItem{
-            Key:   utils.CacheKey(k),
+        item := entity.CacheItem{
+            Key:   entity.CacheKey(k),
             Value: []byte(v),
         }
         cacheItems = append(cacheItems, item)
@@ -92,4 +92,8 @@ Delete keys
 ```go
 resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
 fmt.Printf("Result: \n%+v\n", resultdelete)
+```
+## To run tests
+```
+ginkgo ./...
 ```
