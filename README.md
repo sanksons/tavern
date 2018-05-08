@@ -33,7 +33,7 @@ cacheAdapter := redis.InitializeRedisSimple(redis.RedisSimpleConfig{
     Addr: "localhost:6379",
 })
 ```
-#### Usage
+## Usage
 
 - **Set a Key**
 ```go
