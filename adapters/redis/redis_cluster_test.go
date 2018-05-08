@@ -6,7 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/sanksons/tavern/utils"
+	"github.com/sanksons/tavern/common/entity"
+	"github.com/sanksons/tavern/common/errors"
 )
 
 var _ = Describe("Redis Cluster AdapterC", func() {
@@ -17,8 +18,8 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		//
 		Context("SET KEY", func() {
 			It("should succeed", func() {
-				err := AdapterC.Set(utils.CacheItem{
-					Key:        utils.CacheKey("key1"),
+				err := AdapterC.Set(entity.CacheItem{
+					Key:        entity.CacheKey("key1"),
 					Value:      []byte("I am Key1"),
 					Expiration: 0,
 				})
@@ -32,14 +33,14 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		//
 		Context("GET KEY", func() {
 			It("key1 should match `I am Key1`", func() {
-				dataBytes, err := AdapterC.Get(utils.CacheKey("key1"))
+				dataBytes, err := AdapterC.Get(entity.CacheKey("key1"))
 				Expect(err).To(BeNil())
 				Expect(dataBytes).To(Equal([]byte("I am Key1")))
 
 			})
 			It("key2 should match `not found`", func() {
-				_, err := AdapterC.Get(utils.CacheKey("key2"))
-				Expect(err).To(Equal(utils.KeyNotExists))
+				_, err := AdapterC.Get(entity.CacheKey("key2"))
+				Expect(err).To(Equal(errors.KeyNotExists))
 			})
 		})
 
@@ -48,14 +49,14 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		//
 		Context("DELETE KEY", func() {
 			It("should succeed", func() {
-				m, err := AdapterC.Destroy(utils.CacheKey("key1"))
+				m, err := AdapterC.Destroy(entity.CacheKey("key1"))
 
 				Expect(err).To(BeNil())
-				Expect(m).To(Equal(map[utils.CacheKey]bool{"key1": true}))
+				Expect(m).To(Equal(map[entity.CacheKey]bool{"key1": true}))
 			})
 			It("should actually be deleted", func() {
-				_, err := AdapterC.Get(utils.CacheKey("key1"))
-				Expect(err).To(Equal(utils.KeyNotExists))
+				_, err := AdapterC.Get(entity.CacheKey("key1"))
+				Expect(err).To(Equal(errors.KeyNotExists))
 			})
 
 		})
@@ -70,19 +71,19 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		Context("SET Multi KEY", func() {
 			It("should succeed", func() {
 
-				Items := []utils.CacheItem{
-					utils.CacheItem{
-						Key:        utils.CacheKey("mkey1"),
+				Items := []entity.CacheItem{
+					entity.CacheItem{
+						Key:        entity.CacheKey("mkey1"),
 						Value:      []byte("I am mkey1"),
 						Expiration: time.Duration(340) * time.Second,
 					},
-					utils.CacheItem{
-						Key:        utils.CacheKey("mkey2"),
+					entity.CacheItem{
+						Key:        entity.CacheKey("mkey2"),
 						Value:      []byte("I am mkey2"),
 						Expiration: time.Duration(340) * time.Second,
 					},
-					utils.CacheItem{
-						Key:        utils.CacheKey("mkey3"),
+					entity.CacheItem{
+						Key:        entity.CacheKey("mkey3"),
 						Value:      []byte("I am mkey3"),
 						Expiration: time.Duration(340) * time.Second,
 					},
@@ -90,7 +91,7 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 
 				result, err := AdapterC.MSet(Items...)
 				Expect(err).To(BeNil())
-				Expect(result).To(Equal(map[utils.CacheKey]bool{"mkey1": true, "mkey2": true, "mkey3": true}))
+				Expect(result).To(Equal(map[entity.CacheKey]bool{"mkey1": true, "mkey2": true, "mkey3": true}))
 
 			})
 		})
@@ -101,7 +102,7 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		Context("GET Multi KEY", func() {
 			It("keys should match their content", func() {
 				dataBytes, err := AdapterC.MGet(
-					utils.CacheKey("mkey1"), utils.CacheKey("mkey2"), utils.CacheKey("mkey3"),
+					entity.CacheKey("mkey1"), entity.CacheKey("mkey2"), entity.CacheKey("mkey3"),
 				)
 				Expect(err).To(BeNil())
 				for k, v := range dataBytes {
@@ -125,17 +126,17 @@ var _ = Describe("Redis Cluster AdapterC", func() {
 		//
 		Context("DELETE Multi KEY", func() {
 			It("should succeed", func() {
-				m, err := AdapterC.Destroy(utils.CacheKey("mkey1"), utils.CacheKey("mkey2"))
+				m, err := AdapterC.Destroy(entity.CacheKey("mkey1"), entity.CacheKey("mkey2"))
 
 				Expect(err).To(BeNil())
-				Expect(m).To(Equal(map[utils.CacheKey]bool{"mkey1": true, "mkey2": true}))
+				Expect(m).To(Equal(map[entity.CacheKey]bool{"mkey1": true, "mkey2": true}))
 			})
 			It("should actually be deleted", func() {
-				_, err1 := AdapterC.Get(utils.CacheKey("mkey1"))
-				Expect(err1).To(Equal(utils.KeyNotExists))
+				_, err1 := AdapterC.Get(entity.CacheKey("mkey1"))
+				Expect(err1).To(Equal(errors.KeyNotExists))
 
-				_, err2 := AdapterC.Get(utils.CacheKey("mkey2"))
-				Expect(err2).To(Equal(utils.KeyNotExists))
+				_, err2 := AdapterC.Get(entity.CacheKey("mkey2"))
+				Expect(err2).To(Equal(errors.KeyNotExists))
 			})
 
 		})
