@@ -20,3 +20,7 @@ func InitializeRedisSimple(config RedisSimpleConfig) *RedisSimple {
 	redisSimple.Client = client
 	return redisSimple
 }
+
+func (this *RedisSimple) GetRawClient() *redis.Client {
+	return this.GetRawClient()
+}

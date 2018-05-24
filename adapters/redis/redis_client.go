@@ -22,6 +22,14 @@ type RedisSimpleClient struct {
 	*redis.Client
 }
 
+func (this *RedisSimpleClient) GetRawClient() *redis.Client {
+	return this.Client
+}
+
 type RedisClusterClient struct {
 	*redis.ClusterClient
+}
+
+func (this *RedisClusterClient) GetRawClient() *redis.ClusterClient {
+	return this.ClusterClient
 }

@@ -32,6 +32,10 @@ func InitializeRedisCluster(config RedisClusterConfig) *RedisCluster {
 	return redisCluster
 }
 
+func (this *RedisCluster) GetRawClient() *redis.ClusterClient {
+	return this.GetRawClient()
+}
+
 func (this *RedisCluster) slotify(keys ...entity.CacheKey) map[uint16][]entity.CacheKey {
 	m := make(map[uint16][]entity.CacheKey)
 	for _, key := range keys {
