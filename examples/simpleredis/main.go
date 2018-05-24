@@ -19,10 +19,10 @@ func main() {
 	})
 
 	//This is how we set a key
-	cacheAdapter.Set(entity.CacheItem{Key: "A", Value: []byte("I am A")})
+	cacheAdapter.Set(entity.CacheItem{Key: entity.CacheKey{Name: "A"}, Value: []byte("I am A")})
 
 	//This is how we get a key
-	data, err := cacheAdapter.Get("A")
+	data, err := cacheAdapter.Get(entity.CacheKey{Name: "A"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +39,12 @@ func main() {
 
 	//This is how we get multiple keys
 	fmt.Println("\n get multiple Items:")
-	resultget, err := cacheAdapter.MGet("A", "B", "C", "D")
+	resultget, err := cacheAdapter.MGet(
+		entity.CacheKey{Name: "A"},
+		entity.CacheKey{Name: "B"},
+		entity.CacheKey{Name: "C"},
+		entity.CacheKey{Name: "D"},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +52,11 @@ func main() {
 
 	//this is how we destry keys
 	fmt.Println("\n delete Items:")
-	resultdelete, err := cacheAdapter.Destroy("A", "B", "C")
+	resultdelete, err := cacheAdapter.Destroy(
+		entity.CacheKey{Name: "A"},
+		entity.CacheKey{Name: "B"},
+		entity.CacheKey{Name: "C"},
+	)
 	fmt.Printf("Result: \n%+v\n", resultdelete)
 
 }
@@ -61,7 +70,7 @@ func prepareCacheItems() []entity.CacheItem {
 	cacheItems := make([]entity.CacheItem, 0)
 	for k, v := range data {
 		item := entity.CacheItem{
-			Key:   entity.CacheKey(k),
+			Key:   entity.CacheKey(entity.CacheKey{Name: k}),
 			Value: []byte(v),
 		}
 		cacheItems = append(cacheItems, item)
