@@ -24,8 +24,8 @@ type CacheAdapter interface {
 	MGet(...entity.CacheKey) (map[entity.CacheKey][]byte, error)
 	MSet(...entity.CacheItem) (map[entity.CacheKey]bool, error)
 	Destroy(...entity.CacheKey) (map[entity.CacheKey]bool, error)
-	GetTTL(key entity.CacheKey) (time.Duration, error)
-	SetTTL(key entity.CacheKey, time.Duration) error
+	GetTTL(entity.CacheKey) (time.Duration, error)
+	SetTTL(entity.CacheKey, time.Duration) error
 }
 
 func Initialize(adapter string, config interface{}) (CacheAdapter, error) {
