@@ -24,6 +24,12 @@ func main() {
 		Key:   entity.CacheKey{Name: "A"},
 		Value: []byte("I am A"),
 	})
+	cacheAdapter.Set(entity.CacheItem{
+		Key:   entity.CacheKey{Name: "ttlkey"},
+		Value: []byte("I am A"),
+	})
+
+	cacheAdapter.SetTTL(entity.CacheKey{Name: "ttlkey"}, time.Duration(10*time.Hour))
 
 	//This is how we get a key
 	data, err := cacheAdapter.Get(entity.CacheKey{

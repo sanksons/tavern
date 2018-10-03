@@ -16,6 +16,8 @@ type RedisClient interface {
 	MSet(...interface{}) *redis.StatusCmd
 	Del(...string) *redis.IntCmd
 	Pipeline() redis.Pipeliner
+	TTL(key string) *redis.DurationCmd
+	Expire(key string, expiration time.Duration) *redis.BoolCmd
 }
 
 type RedisSimpleClient struct {

@@ -117,3 +117,25 @@ func (this *redisbase) Destroy(keys ...entity.CacheKey) (map[entity.CacheKey]boo
 	}
 	return m, nil
 }
+
+func (this *redisbase) GetTTL(key entity.CacheKey) (time.Duration, error) {
+	dur, err := this.Client.TTL(key.GetMachineKey().String()).Result()
+	if err != nil && err == redis.Nil {
+		return 0, KeyNotExists
+	}
+	if err != nil {
+		return 0, err
+	}
+	return dur, nil
+}
+
+func (this *redisbase) SetTTL(key entity.CacheKey, ttl time.Duration) error {
+	_, err := this.Client.Expire(key.GetMachineKey().String(), ttl).Result()
+	if err != nil && err == redis.Nil {
+		return KeyNotExists
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}

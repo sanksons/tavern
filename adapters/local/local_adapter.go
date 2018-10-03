@@ -2,6 +2,7 @@ package local
 
 import (
 	"fmt"
+	"time"
 
 	localcache "github.com/patrickmn/go-cache"
 	. "github.com/sanksons/tavern/common/entity"
@@ -92,4 +93,12 @@ func (this *Local) Destroy(keys ...CacheKey) (map[CacheKey]bool, error) {
 		result[k] = true
 	}
 	return result, nil
+}
+
+func (this *Local) GetTTL(key CacheKey) (time.Duration, error) {
+	return 0, fmt.Errorf("Not impl")
+}
+
+func (this *Local) SetTTL(key CacheKey, ttl time.Duration) error {
+	return fmt.Errorf("Not impl")
 }
